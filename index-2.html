@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-functions.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-storage.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.css" />
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+
+    <!-- <script src="main.js"></script> -->
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- The surrounding HTML is left untouched by FirebaseUI.
+     Your app may use that space for branding, controls and other customizations.-->
+        <h1>Welcome to My Awesome App</h1>
+        <div class="card" style="width: 20rem;">
+            <img class="card-img-top" id="currentUserImage" alt="Your image goes here...">
+            <div class="card-body">
+                <h5 class="card-title">Your User Information Using the Firebase Authentication</h5>
+                <p class="card-text" id="currentUserName"></p>
+                <p class="card-text" id="currentUserID"></p>
+                <p class="card-text" id="currentUserEmail"></p>
+                <p class="card-text" id="currentEmailVerified"></p>
+
+            </div>
+        </div>
+        <br />
+        <br />
+        <form role="form">
+            <div class="form-group">
+                <h4>Do you need to update your information?</h4>
+                <label for="display-name-input">Display Name:</label>
+                <input class="form-control" id="display-name-input" type="text">
+                <button class="btn " id="update-name-button" type="submit">Update</button>
+
+            </div>
+            <div class="form-group">
+                <label for="photo-input">Your Photo URL:</label>
+                <input class="form-control" id="photo-input" type="text">
+                <button class="btn " id="update-photo-button" type="submit">Update</button>
+
+            </div>
+            <div class="form-group">
+                <label for="update-email-input">Email:</label>
+                <input class="form-control" id="update-email-input" type="email">
+                <button class="btn " id="update-email-button" type="submit">Update</button>
+
+            </div>
+            <button class="btn " id="update-user" type="submit">Submit</button>
+        </form>
+
+        <h3>This form I made to add new users to the Firebase Database.</h3>
+
+        <form role="form">
+            <div class="form-group">
+                <label for="name-input">Name:</label>
+                <input class="form-control" id="name-input" type="text">
+
+            </div>
+            <div class="form-group">
+                <label for="email-input">Email:</label>
+                <input class="form-control" id="email-input" type="email">
+
+            </div>
+            <div class="form-group">
+                <label for="userID-input">Display Name:</label>
+                <input class="form-control" id="userID-input" type="text">
+
+            </div>
+            <button class="btn " id="add-user" type="submit">Add User</button>
+
+        </form>
+    </div>
+
+
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyC1iZLTisB7luouWeBKsAWzfh5D0PjiREI",
+            authDomain: "testing-2018-09-09.firebaseapp.com",
+            databaseURL: "https://testing-2018-09-09.firebaseio.com",
+            projectId: "testing-2018-09-09",
+            storageBucket: "testing-2018-09-09.appspot.com",
+            messagingSenderId: "796084848714"
+        };
+        firebase.initializeApp(config);
+
+        var updateCard = function () {
+            setTimeout(() => {
+                var user = firebase.auth().currentUser;
+                var name, email, photoUrl, uid, emailVerified;
+                user;
+                console.log(user);
+
+                // if (user != null) {
+
+                name = user.displayName;
+                email = user.email;
+                photoUrl = user.photoURL;
+                emailVerified = user.emailVerified;
+                uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
+                // this value to authenticate with your backend server, if
+                // you have one. Use User.getToken() instead.
+
+                // }
+                $('#currentUserName').text('Display Name: ' + name);
+                $('#currentUserID').text('Your UID: ' + uid);
+                $('#currentUserEmail').text('Email: ' + email);
+                $('#currentEmailVerified').text('Email verified?: ' + emailVerified);
+                $('#currentUserImage').attr('src', photoUrl);
+
+            }, 3000);
+
+
+        }//end of updateCard function
+        updateCard();
+
+        var database = firebase.database();
+        var databaseRef = database.ref();
+
+        function writeUserData(userId, name, email, imageUrl) {
+            firebase.database().ref('users/' + userId).set({
+                username: name,
+                email: email,
+                profile_picture: imageUrl
+            });
+        }
+        $("#add-user").on("click", function (event) {
+            event.preventDefault();
+
+            var newName = $('#name-input').val().trim();
+
+            var newEmail = $('#email-input').val().trim();
+
+            var newUserID = $('#userID-input').val().trim();
+
+            var newImageUrl = '';
+
+            writeUserData(newUserID, newName, newEmail, newImageUrl);
+            console.log(databaseRef);
+
+        });
+        //To update information
+        $("#update-email-button").on("click", function (event) {
+            event.preventDefault();
+
+            var updateEmail = $('#update-email-input').val().trim();
+
+            var user = firebase.auth().currentUser;
+
+            if (!updateEmail) {
+                return;
+            }
+            else {
+                user.updateEmail(updateEmail)
+                    .then(function () {
+                        console.log('update successful');
+                        updateCard();
+                        $("#update-email-input").val('');
+                    })
+            }
+        });
+
+        $("#update-name-button").on("click", function (event) {
+            event.preventDefault();
+
+            var updateDisplayName = $('#display-name-input').val().trim();
+
+            var user = firebase.auth().currentUser;
+
+            if (!updateDisplayName) {
+                return;
+            }
+            else {
+                user.updateProfile({
+                    displayName: updateDisplayName
+                })
+                    .then(function () {
+                        console.log('update successful');
+                        updateCard();
+                        $("#display-name-input").val('');
+                    })
+            }
+        });
+
+        $("#update-photo-button").on("click", function (event) {
+            event.preventDefault();
+
+
+            var updateImageUrl = $('#photo-input').val().trim();
+
+            var user = firebase.auth().currentUser;
+
+            if (!updateImageUrl) {
+                return;
+            }
+            else {
+                user.updateProfile({
+                    photoURL: updateImageUrl
+                })
+                    .then(function () {
+                        console.log('update successful');
+                        updateCard();
+                        $("#photo-input").val('');
+                    })
+            }
+        });
+
+    </script>
+</body>
+
+</html>
